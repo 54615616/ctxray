@@ -1,0 +1,36 @@
+{
+  "name": "ctxray",
+  "version": "1.0.0",
+  "description": "See what your AI sees. AST-aware context compiler, Dependency PageRank budgeter, Interactive X-Ray Studio & MCP Server.",
+  "keywords": [
+    "ai",
+    "llm",
+    "mcp",
+    "context-engineering",
+    "ast",
+    "prompt-caching",
+    "token-counter",
+    "claude-code",
+    "cursor",
+    "codex",
+    "repomix"
+  ],
+  "homepage": "https://github.com/2865429935/ctxray",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/2865429935/ctxray.git"
+  },
+  "license": "MIT",
+  "bin": {
+    "ctxray": "./bin/ctxray.js"
+  },
+  "scripts": {
+    "start": "node ./bin/ctxray.js rank .",
+    "scan": "node ./bin/ctxray.js scan . --budget 32k",
+    "studio": "node ./bin/ctxray.js studio",
+    "mcp": "node ./bin/ctxray.js mcp"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

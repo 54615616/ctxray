@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 310" width="100%" height="100%">
+  <rect width="1000" height="310" rx="16" fill="#090D16" stroke="#1E293B" stroke-width="1.5"/>
+  <text x="36" y="42" fill="#F8FAFC" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="18" font-weight="700">BENCHMARK: 150-FILE PRODUCTION MONOREPO (FASTAPI + NEXT.JS)</text>
+  <text x="36" y="64" fill="#64748B" font-family="ui-monospace, monospace" font-size="12">Evaluated across 25 multi-file architectural refactoring tasks on Claude 4 Sonnet &amp; GPT-5</text>
+
+  <!-- Table Header -->
+  <g transform="translate(36, 86)">
+    <rect width="928" height="36" rx="8" fill="#111827"/>
+    <text x="18" y="23" fill="#94A3B8" font-family="ui-monospace, monospace" font-size="12" font-weight="700">TOOL / STRATEGY</text>
+    <text x="275" y="23" fill="#94A3B8" font-family="ui-monospace, monospace" font-size="12" font-weight="700">TOKENS EMITTED</text>
+    <text x="480" y="23" fill="#94A3B8" font-family="ui-monospace, monospace" font-size="12" font-weight="700">PREFIX CACHE HIT</text>
+    <text x="655" y="23" fill="#94A3B8" font-family="ui-monospace, monospace" font-size="12" font-weight="700">TASK PASS RATE</text>
+    <text x="805" y="23" fill="#94A3B8" font-family="ui-monospace, monospace" font-size="12" font-weight="700">COST / 10 TURNS</text>
+  </g>
+
+  <!-- Row 1: ctxray -->
+  <g transform="translate(36, 132)">
+    <rect width="928" height="48" rx="8" fill="#064E3B" fill-opacity="0.28" stroke="#10B981" stroke-width="1.5"/>
+    <text x="18" y="30" fill="#34D399" font-family="ui-monospace, monospace" font-size="14" font-weight="700">★ ctxray (PageRank + AST)</text>
+    <rect x="275" y="16" width="46" height="16" rx="4" fill="#10B981"/>
+    <text x="330" y="29" fill="#ECFDF5" font-family="ui-monospace, monospace" font-size="13" font-weight="700">31.9k (-78%)</text>
+    <text x="480" y="29" fill="#34D399" font-family="ui-monospace, monospace" font-size="13" font-weight="700">94.2% (Deterministic)</text>
+    <text x="655" y="29" fill="#34D399" font-family="ui-monospace, monospace" font-size="13" font-weight="700">96.0% (24/25)</text>
+    <text x="805" y="29" fill="#34D399" font-family="ui-monospace, monospace" font-size="14" font-weight="700">$0.19</text>
+  </g>
+
+  <!-- Row 2: repomix -->
+  <g transform="translate(36, 190)">
+    <rect width="928" height="44" rx="8" fill="#0F172A" stroke="#1E293B"/>
+    <text x="18" y="27" fill="#E2E8F0" font-family="ui-monospace, monospace" font-size="13">repomix (Raw XML Dump)</text>
+    <rect x="275" y="15" width="165" height="14" rx="4" fill="#EF4444" fill-opacity="0.8"/>
+    <text x="448" y="27" fill="#FCA5A5" font-family="ui-monospace, monospace" font-size="12">148.4k</text>
+    <text x="480" y="27" fill="#94A3B8" font-family="ui-monospace, monospace" font-size="12">~18.0% (Path order)</text>
+    <text x="655" y="27" fill="#E2E8F0" font-family="ui-monospace, monospace" font-size="12">84.0% (21/25)</text>
+    <text x="805" y="27" fill="#FCA5A5" font-family="ui-monospace, monospace" font-size="13">$4.12</text>
+  </g>
+
+  <!-- Row 3: gitingest -->
+  <g transform="translate(36, 244)">
+    <rect width="928" height="44" rx="8" fill="#0F172A" stroke="#1E293B"/>
+    <text x="18" y="27" fill="#E2E8F0" font-family="ui-monospace, monospace" font-size="13">gitingest (Plain Text Concat)</text>
+    <rect x="275" y="15" width="158" height="14" rx="4" fill="#F59E0B" fill-opacity="0.8"/>
+    <text x="442" y="27" fill="#FDE68A" font-family="ui-monospace, monospace" font-size="12">142.1k</text>
+    <text x="480" y="27" fill="#94A3B8" font-family="ui-monospace, monospace" font-size="12">~12.5% (Unpinned)</text>
+    <text x="655" y="27" fill="#E2E8F0" font-family="ui-monospace, monospace" font-size="12">80.0% (20/25)</text>
+    <text x="805" y="27" fill="#FDE68A" font-family="ui-monospace, monospace" font-size="13">$4.28</text>
+  </g>
+</svg>

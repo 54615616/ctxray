@@ -1,0 +1,147 @@
+{
+  "name": "ctxray-vscode",
+  "displayName": "ctxray — Visual Context Compiler & Dependency PageRank",
+  "description": "Compile repositories into cache-pinned LLM context bundles, inspect Dependency PageRank, analyze blast radius, and AST-skeletonize code in VS Code, Cursor & Windsurf.",
+  "version": "1.0.0",
+  "publisher": "ctxray",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "AI",
+    "Programming Languages",
+    "Visualization",
+    "Linters",
+    "Other"
+  ],
+  "keywords": [
+    "ai",
+    "context-engineering",
+    "llm",
+    "mcp",
+    "cursor",
+    "windsurf",
+    "claude-code",
+    "pagerank",
+    "ast",
+    "token-counter"
+  ],
+  "activationEvents": [
+    "onStartupFinished",
+    "onCommand:ctxray.compileRepo",
+    "onCommand:ctxray.skeletonizeCurrentFile",
+    "onCommand:ctxray.showBlastRadius",
+    "onCommand:ctxray.openStudio",
+    "onCommand:ctxray.initRules"
+  ],
+  "main": "./extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "ctxray.compileRepo",
+        "title": "ctxray: Compile Repository Context Bundle to Clipboard",
+        "category": "ctxray"
+      },
+      {
+        "command": "ctxray.skeletonizeCurrentFile",
+        "title": "ctxray: AST-Skeletonize Current File",
+        "category": "ctxray"
+      },
+      {
+        "command": "ctxray.showBlastRadius",
+        "title": "ctxray: Analyze File Dependency Blast Radius",
+        "category": "ctxray"
+      },
+      {
+        "command": "ctxray.openStudio",
+        "title": "ctxray: Launch Live Visual X-Ray Studio",
+        "category": "ctxray"
+      },
+      {
+        "command": "ctxray.initRules",
+        "title": "ctxray: Initialize AGENTS.md / CLAUDE.md / Cursor Rules",
+        "category": "ctxray"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "command": "ctxray.skeletonizeCurrentFile",
+          "group": "ctxray@1"
+        },
+        {
+          "command": "ctxray.showBlastRadius",
+          "group": "ctxray@2"
+        }
+      ],
+      "explorer/context": [
+        {
+          "command": "ctxray.showBlastRadius",
+          "group": "ctxray@1"
+        },
+        {
+          "command": "ctxray.compileRepo",
+          "group": "ctxray@2"
+        }
+      ]
+    },
+    "keybindings": [
+      {
+        "command": "ctxray.compileRepo",
+        "key": "ctrl+shift+x c",
+        "mac": "cmd+shift+x c"
+      },
+      {
+        "command": "ctxray.skeletonizeCurrentFile",
+        "key": "ctrl+shift+x s",
+        "mac": "cmd+shift+x s"
+      },
+      {
+        "command": "ctxray.showBlastRadius",
+        "key": "ctrl+shift+x b",
+        "mac": "cmd+shift+x b"
+      },
+      {
+        "command": "ctxray.openStudio",
+        "key": "ctrl+shift+x o",
+        "mac": "cmd+shift+x o"
+      }
+    ],
+    "configuration": {
+      "title": "ctxray",
+      "properties": {
+        "ctxray.defaultBudget": {
+          "type": "string",
+          "default": "32k",
+          "description": "Default token budget for repository context compilation (e.g., 16k, 32k, 64k, 128k)."
+        },
+        "ctxray.format": {
+          "type": "string",
+          "enum": [
+            "xml",
+            "md",
+            "json"
+          ],
+          "default": "xml",
+          "enumDescriptions": [
+            "Cache-pinned <ctxray_bundle> XML (recommended for Claude, GPT-5, o3/o4, DeepSeek)",
+            "Structured Markdown context report",
+            "Machine-readable JSON telemetry and dependency graph"
+          ],
+          "description": "Output bundle format copied to clipboard or saved by ctxray."
+        },
+        "ctxray.pythonPath": {
+          "type": "string",
+          "default": "python",
+          "description": "Python interpreter path used when invoking local ctxray fallback."
+        },
+        "ctxray.studioPort": {
+          "type": "number",
+          "default": 8420,
+          "description": "Starting local port for the ctxray Live Visual X-Ray Studio server."
+        }
+      }
+    }
+  }
+}

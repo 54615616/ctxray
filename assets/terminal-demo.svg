@@ -1,0 +1,171 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 440" width="880" height="440" role="img" aria-label="ctxray terminal session recording">
+  <defs>
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0B0F19"/>
+      <stop offset="100%" stop-color="#070A12"/>
+    </linearGradient>
+    <linearGradient id="headerGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#182032"/>
+      <stop offset="100%" stop-color="#111726"/>
+    </linearGradient>
+    <linearGradient id="accentGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#38BDF8"/>
+      <stop offset="50%" stop-color="#818CF8"/>
+      <stop offset="100%" stop-color="#34D399"/>
+    </linearGradient>
+    <filter id="dropShadow" x="-4%" y="-4%" width="108%" height="108%">
+      <feDropShadow dx="0" dy="10" stdDeviation="14" flood-color="#000000" flood-opacity="0.65"/>
+    </filter>
+  </defs>
+
+  <style>
+    .mono {
+      font-family: 'JetBrains Mono', 'Fira Code', 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+      font-size: 11.5px;
+      fill: #E2E8F0;
+      white-space: pre;
+    }
+    .title {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, sans-serif;
+      font-size: 12px;
+      font-weight: 600;
+      fill: #94A3B8;
+    }
+    .badge-text {
+      font-family: 'JetBrains Mono', Consolas, monospace;
+      font-size: 10px;
+      font-weight: 700;
+    }
+    .dim { fill: #64748B; }
+    .muted { fill: #94A3B8; }
+    .cyan { fill: #38BDF8; }
+    .emerald { fill: #34D399; font-weight: 600; }
+    .amber { fill: #FBBF24; font-weight: 600; }
+    .rose { fill: #FB7185; font-weight: 600; }
+    .violet { fill: #A78BFA; font-weight: 600; }
+    .bold { font-weight: 700; fill: #F8FAFC; }
+
+    @keyframes fadeIn {
+      0% { opacity: 0; transform: translateY(3px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes blink {
+      0%, 49% { opacity: 1; }
+      50%, 100% { opacity: 0; }
+    }
+
+    .l1  { animation: fadeIn 0.18s ease-out 0.02s both; }
+    .l2  { animation: fadeIn 0.18s ease-out 0.05s both; }
+    .l3  { animation: fadeIn 0.18s ease-out 0.08s both; }
+    .l4  { animation: fadeIn 0.18s ease-out 0.11s both; }
+    .l5  { animation: fadeIn 0.18s ease-out 0.14s both; }
+    .l6  { animation: fadeIn 0.18s ease-out 0.17s both; }
+    .l7  { animation: fadeIn 0.18s ease-out 0.20s both; }
+    .l8  { animation: fadeIn 0.18s ease-out 0.23s both; }
+    .l9  { animation: fadeIn 0.18s ease-out 0.26s both; }
+    .l11 { animation: fadeIn 0.18s ease-out 0.30s both; }
+    .l12 { animation: fadeIn 0.18s ease-out 0.34s both; }
+    .l13 { animation: fadeIn 0.18s ease-out 0.38s both; }
+    .l14 { animation: fadeIn 0.18s ease-out 0.42s both; }
+    .l16 { animation: fadeIn 0.18s ease-out 0.46s both; }
+    .l17 { animation: fadeIn 0.18s ease-out 0.50s both; }
+    .l18 { animation: fadeIn 0.18s ease-out 0.54s both; }
+    .l19 { animation: fadeIn 0.18s ease-out 0.58s both; }
+    .cursor { animation: blink 1.1s step-end infinite; }
+  </style>
+
+  <!-- Outer Window Frame -->
+  <rect x="8" y="8" width="864" height="424" rx="12" fill="url(#bgGrad)" stroke="#1E293B" stroke-width="1.5" filter="url(#dropShadow)"/>
+
+  <!-- Top Title Bar -->
+  <path d="M 8 20 Q 8 8 20 8 L 860 8 Q 872 8 872 20 L 872 42 L 8 42 Z" fill="url(#headerGrad)"/>
+  <line x1="8" y1="42" x2="872" y2="42" stroke="#1E293B" stroke-width="1"/>
+  <rect x="8" y="41.5" width="864" height="1.5" fill="url(#accentGrad)" opacity="0.55"/>
+
+  <!-- macOS Traffic Lights -->
+  <circle cx="28" cy="25" r="6" fill="#FF5F56" stroke="#E0443E" stroke-width="0.5"/>
+  <circle cx="48" cy="25" r="6" fill="#FFBD2E" stroke="#DEA123" stroke-width="0.5"/>
+  <circle cx="68" cy="25" r="6" fill="#27C93F" stroke="#1AAB29" stroke-width="0.5"/>
+
+  <!-- Window Title & Warp Tab Pill -->
+  <text x="440" y="29" text-anchor="middle" class="title">zsh — ~/workspace/ctxray — 112×26</text>
+  <rect x="762" y="15" width="94" height="20" rx="5" fill="#0F172A" stroke="#334155" stroke-width="1"/>
+  <circle cx="774" cy="25" r="3.5" fill="#34D399"/>
+  <text x="784" y="28.5" class="badge-text" fill="#94A3B8">ctxray v2.0</text>
+
+  <!-- Warp Block Divider 1 -->
+  <rect x="18" y="50" width="844" height="184" rx="6" fill="#0F172A" fill-opacity="0.55" stroke="#1E293B" stroke-width="1"/>
+  <rect x="18" y="50" width="3" height="184" rx="1.5" fill="#38BDF8"/>
+
+  <!-- Command 1: npx ctxray rank . --budget 32k -->
+  <g class="l1">
+    <text x="30" y="68" class="mono"><tspan class="emerald">$</tspan> <tspan class="bold">npx ctxray rank . --budget 32k</tspan> <tspan class="dim"># AST PageRank + 3-Tier Knapsack Compiler</tspan></text>
+  </g>
+  <g class="l2">
+    <text x="30" y="86" class="mono"><tspan class="cyan">ℹ</tspan> Indexed <tspan class="bold">42 modules</tspan> (1,284 AST symbols, 318 edges) in <tspan class="emerald">19.4ms</tspan>  │  Damping <tspan class="violet">d=0.85</tspan></text>
+  </g>
+  <g class="l3">
+    <text x="30" y="104" class="mono dim">  RANK   PAGERANK   TIER         MODULE                              TOKENS       COMPRESSION</text>
+  </g>
+  <g class="l4">
+    <rect x="150" y="110" width="68" height="15" rx="3" fill="#064E3B" stroke="#10B981" stroke-width="0.8"/>
+    <text x="30" y="121" class="mono">  #01    <tspan class="cyan">0.1482</tspan>     <tspan class="emerald"> [FULL]     </tspan> src/core/graph-engine.ts            4,120 → 4,120  <tspan class="muted">100% AST fidelity</tspan></text>
+  </g>
+  <g class="l5">
+    <rect x="150" y="128" width="68" height="15" rx="3" fill="#064E3B" stroke="#10B981" stroke-width="0.8"/>
+    <text x="30" y="139" class="mono">  #02    <tspan class="cyan">0.1194</tspan>     <tspan class="emerald"> [FULL]     </tspan> src/compiler/knapsack-packer.ts     3,480 → 3,480  <tspan class="muted">100% AST fidelity</tspan></text>
+  </g>
+  <g class="l6">
+    <rect x="150" y="146" width="68" height="15" rx="3" fill="#451A03" stroke="#F59E0B" stroke-width="0.8"/>
+    <text x="30" y="157" class="mono">  #03    <tspan class="cyan">0.0861</tspan>     <tspan class="amber"> [SKELETON] </tspan> src/parser/ts-ast-scanner.ts        9,840 → 1,620  <tspan class="amber">-83.5% signatures</tspan></text>
+  </g>
+  <g class="l7">
+    <rect x="150" y="164" width="68" height="15" rx="3" fill="#451A03" stroke="#F59E0B" stroke-width="0.8"/>
+    <text x="30" y="175" class="mono">  #04    <tspan class="cyan">0.0645</tspan>     <tspan class="amber"> [SKELETON] </tspan> src/mcp/flight-recorder.ts          7,210 → 1,190  <tspan class="amber">-83.5% signatures</tspan></text>
+  </g>
+  <g class="l8">
+    <rect x="150" y="182" width="68" height="15" rx="3" fill="#2E1065" stroke="#8B5CF6" stroke-width="0.8"/>
+    <text x="30" y="193" class="mono">  #05    <tspan class="cyan">0.0312</tspan>     <tspan class="violet"> [SUMMARY]  </tspan> src/cli/formatters/ansi-table.ts    5,490 →   310  <tspan class="violet">-94.4% export stub</tspan></text>
+  </g>
+  <g class="l9">
+    <rect x="28" y="204" width="824" height="22" rx="4" fill="#064E3B" fill-opacity="0.35" stroke="#059669" stroke-width="0.8"/>
+    <text x="36" y="219" class="mono"><tspan class="emerald">✓ Budget Compiled:</tspan> <tspan class="bold">148,400 -&gt; 31,900 tokens (-78.5%)</tspan> │ <tspan class="cyan">94.2% Prefix Cache Hit</tspan> │ <tspan class="emerald">$0.41 saved/turn</tspan></text>
+  </g>
+
+  <!-- Warp Block Divider 2 -->
+  <rect x="18" y="242" width="844" height="86" rx="6" fill="#0F172A" fill-opacity="0.55" stroke="#1E293B" stroke-width="1"/>
+  <rect x="18" y="242" width="3" height="86" rx="1.5" fill="#FB7185"/>
+
+  <!-- Command 2: npx ctxray cycles . -->
+  <g class="l11">
+    <text x="30" y="260" class="mono"><tspan class="emerald">$</tspan> <tspan class="bold">npx ctxray cycles .</tspan> <tspan class="dim"># Tarjan O(V + E) Strongly Connected Components</tspan></text>
+  </g>
+  <g class="l12">
+    <text x="30" y="279" class="mono"><tspan class="rose">⚠ SCC Cycle #1 Detected</tspan> (3 modules, Git co-change churn risk: <tspan class="rose">HIGH 0.89</tspan>):</text>
+  </g>
+  <g class="l13">
+    <text x="30" y="297" class="mono">  <tspan class="amber">src/auth/session.ts</tspan> <tspan class="dim">──imports──▸</tspan> <tspan class="amber">src/db/user-repo.ts</tspan> <tspan class="dim">──imports──▸</tspan> <tspan class="amber">src/auth/token-guard.ts</tspan> <tspan class="dim">──▸</tspan> <tspan class="rose">session.ts</tspan></text>
+  </g>
+  <g class="l14">
+    <text x="30" y="316" class="mono"><tspan class="cyan">💡 Suggested Edge to Break:</tspan> Extract <tspan class="bold">SessionClaims</tspan> interface from <tspan class="emerald">user-repo.ts → session.ts</tspan> (min-cut weight 1.2)</text>
+  </g>
+
+  <!-- Warp Block Divider 3 -->
+  <rect x="18" y="336" width="844" height="86" rx="6" fill="#0F172A" fill-opacity="0.55" stroke="#1E293B" stroke-width="1"/>
+  <rect x="18" y="336" width="3" height="86" rx="1.5" fill="#34D399"/>
+
+  <!-- Command 3: npx ctxray init-rules . -->
+  <g class="l16">
+    <text x="30" y="354" class="mono"><tspan class="emerald">$</tspan> <tspan class="bold">npx ctxray init-rules .</tspan> <tspan class="dim"># Synthesize deterministic agent context files</tspan></text>
+  </g>
+  <g class="l17">
+    <text x="30" y="373" class="mono"><tspan class="emerald">✓</tspan> Generated <tspan class="bold">CLAUDE.md</tspan>                          <tspan class="dim">(Top-12 PageRank hubs + SCC boundary invariants)</tspan></text>
+  </g>
+  <g class="l18">
+    <text x="30" y="391" class="mono"><tspan class="emerald">✓</tspan> Generated <tspan class="bold">AGENTS.md</tspan>                          <tspan class="dim">(Prefix-cached module map + verification commands)</tspan></text>
+  </g>
+  <g class="l19">
+    <text x="30" y="409" class="mono"><tspan class="emerald">✓</tspan> Generated <tspan class="bold">.cursor/rules/architecture.mdc</tspan>   <tspan class="dim">(Glob-scoped AST contracts &amp; anti-cycle guards)</tspan></text>
+    <rect x="742" y="398" width="7" height="13" fill="#38BDF8" class="cursor"/>
+  </g>
+</svg>
