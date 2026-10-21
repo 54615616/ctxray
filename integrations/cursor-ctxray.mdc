@@ -1,0 +1,29 @@
+---
+description: Token-efficient codebase exploration and impact analysis via ctxray MCP tools
+globs: ["**/*"]
+alwaysApply: true
+---
+
+# ctxray — Context & Blast-Radius Discipline
+
+Before performing multi-file edits, architectural refactors, or reading large modules in full, use the **ctxray** MCP tools (or CLI fallback) to minimize context token burn and prevent silent regressions.
+
+## Required Workflow for Multi-File Edits
+
+1. **Orient with PageRank (`ctxray_repo_map`)**
+   - Call `ctxray_repo_map({ root: ".", budget: 2000, query: "<task keywords>" })` at the start of a task to get a PageRank-weighted architectural map within a strict token budget.
+   - Do not grep blindly across the workspace before checking the ranked repository map.
+
+2. **Skeletonize Before Full Reads (`ctxray_skeletonize`)**
+   - When inspecting files over 150 lines where you only need signatures, types, or public APIs, call `ctxray_skeletonize({ path: "<file>" })`.
+   - Read full implementation bodies only for the specific functions you plan to modify.
+
+3. **Check Blast Radius Before Modifying Shared Symbols (`ctxray_blast_radius`)**
+   - Before changing any exported function, class, schema, or module interface, call `ctxray_blast_radius({ target: "<file-or-symbol>", depth: 2 })`.
+   - Review all direct and transitive dependents, risk scores, and affected test files, and update downstream callers in the same edit pass.
+
+## CLI Fallback
+If MCP tools are unavailable in the current shell session, run:
+- `python ctxray.py map . --budget 2000 --query "<keywords>"`
+- `python ctxray.py skel <file>`
+- `python ctxray.py blast <file> --depth 2`

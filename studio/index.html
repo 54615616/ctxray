@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ctxray Studio — Visual Context X-Ray, PageRank Budgeter &amp; AST Skeleton Compiler</title>
+  <style>
+    :root {
+      --bg: #070b14;
+      --panel: #0d1322;
+      --panel-alt: #111827;
+      --border: #1e293b;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --cyan: #38bdf8;
+      --emerald: #10b981;
+      --indigo: #818cf8;
+      --amber: #f59e0b;
+      --rose: #ef4444;
+      --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: radial-gradient(circle at 15% 0%, #0f1b33 0%, var(--bg) 55%);
+      color: var(--text);
+      font-family: var(--font-sans);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 24px;
+      background: rgba(13, 19, 34, 0.88);
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(12px);
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      flex-wrap: wrap;
+      gap: 14px;
+    }
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .brand-logo {
+      width: 36px; height: 36px; border-radius: 10px;
+      background: #0f172a; border: 1.5px solid var(--cyan);
+      display: grid; place-items: center;
+      box-shadow: 0 0 18px rgba(56, 189, 248, 0.25);
+    }
+    .brand-title {
+      font-size: 20px; font-weight: 800; letter-spacing: -0.5px;
+      background: linear-gradient(90deg, #38bdf8, #818cf8, #34d399);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .badge {
+      font-family: var(--font-mono); font-size: 11px; padding: 3px 8px;
+      border-radius: 999px; background: rgba(16, 185, 129, 0.15);
+      color: #6ee7b7; border: 1px solid rgba(16, 185, 129, 0.4);
+    }
+    .controls { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+    select, .btn {
+      background: #0f172a; color: var(--text); border: 1px solid #334155;
+      border-radius: 8px; padding: 8px 12px; font-size: 13px;
+      font-family: var(--font-sans); cursor: pointer; transition: all 0.15s ease;
+    }
+    select:hover, .btn:hover {
+      border-color: var(--cyan); box-shadow: 0 0 12px rgba(56, 189, 248, 0.2);
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #0284c7, #059669);
+      border-color: #38bdf8; font-weight: 600;
+    }
+    .slider-box {
+      display: flex; align-items: center; gap: 10px; background: #0f172a;
+      padding: 6px 14px; border-radius: 8px; border: 1px solid var(--border);
+      font-family: var(--font-mono); font-size: 12px;
+    }
+    .slider-box input[type="range"] { accent-color: var(--emerald); width: 140px; cursor: pointer; }
+    .kpi-strip {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 14px; padding: 18px 24px 8px;
+    }
+    .kpi-card {
+      background: var(--panel); border: 1px solid var(--border);
+      border-radius: 12px; padding: 14px 16px;
+    }
+    .kpi-label {
+      font-size: 11px; font-family: var(--font-mono);
+      text-transform: uppercase; color: var(--muted); letter-spacing: 0.5px;
+    }
+    .kpi-value { font-size: 24px; font-weight: 800; margin-top: 6px; font-family: var(--font-mono); }
+    .kpi-sub { font-size: 12px; color: var(--muted); margin-top: 4px; }
+    .workspace {
+      display: grid; grid-template-columns: 1.55fr 1fr;
+      gap: 16px; padding: 12px 24px 24px; flex: 1;
+    }
+    @media (max-width: 1024px) { .workspace { grid-template-columns: 1fr; } }
+    .card {
+      background: var(--panel); border: 1px solid var(--border);
+      border-radius: 14px; display: flex; flex-direction: column; overflow: hidden;
+    }
+    .tabs {
+      display: flex; gap: 4px; padding: 10px 14px;
+      background: #090d18; border-bottom: 1px solid var(--border); flex-wrap: wrap;
+    }
+    .tab {
+      padding: 7px 14px; border-radius: 8px; font-size: 13px; font-weight: 600;
+      color: var(--muted); background: transparent; border: 1px solid transparent; cursor: pointer;
+    }
+    .tab.active {
+      color: var(--text); background: #131c31; border-color: rgba(56, 189, 248, 0.45);
+    }
+    .panel-body { padding: 16px; flex: 1; display: flex; flex-direction: column; gap: 12px; }
+    .svg-stage {
+      width: 100%; height: 430px; background: #070a12;
+      border: 1px solid #1e293b; border-radius: 10px; overflow: hidden; position: relative;
+    }
+    .legend {
+      display: flex; gap: 16px; font-family: var(--font-mono);
+      font-size: 12px; color: var(--muted); align-items: center; flex-wrap: wrap;
+    }
+    .dot { width: 10px; height: 10px; border-radius: 3px; display: inline-block; margin-right: 6px; }
+    .code-split { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; height: 410px; }
+    .code-box {
+      display: flex; flex-direction: column; background: #070a12;
+      border: 1px solid var(--border); border-radius: 10px; overflow: hidden;
+    }
+    .code-header {
+      padding: 8px 12px; background: #0f172a; border-bottom: 1px solid var(--border);
+      font-family: var(--font-mono); font-size: 11px; display: flex;
+      justify-content: space-between; color: var(--muted);
+    }
+    textarea, pre {
+      flex: 1; background: transparent; color: #e2e8f0; font-family: var(--font-mono);
+      font-size: 12px; line-height: 1.5; padding: 12px; border: none;
+      resize: none; overflow: auto; white-space: pre;
+    }
+    .file-table { width: 100%; border-collapse: collapse; font-family: var(--font-mono); font-size: 12px; }
+    .file-table th, .file-table td { text-align: left; padding: 8px 10px; border-bottom: 1px solid #162032; }
+    .file-table tr:hover { background: rgba(56, 189, 248, 0.08); cursor: pointer; }
+    .file-table tr.selected { background: rgba(16, 185, 129, 0.14); }
+    .tier-pill { padding: 2px 7px; border-radius: 5px; font-size: 10px; font-weight: 700; }
+    .tier-FULL { background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid #10b981; }
+    .tier-SKELETON { background: rgba(56, 189, 248, 0.2); color: #7dd3fc; border: 1px solid #38bdf8; }
+    .tier-SUMMARY { background: rgba(129, 140, 248, 0.2); color: #c7d2fe; border: 1px solid #818cf8; }
+    .cost-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 8px; }
+    .cost-item {
+      background: #090d18; border: 1px solid var(--border);
+      border-radius: 8px; padding: 10px; font-family: var(--font-mono); font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <div class="brand-logo">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+          <path d="M4 7L12 12L4 17M20 7L12 12L20 17" stroke="#38BDF8" stroke-width="2.2" stroke-linecap="round"/>
+          <circle cx="12" cy="12" r="2.5" fill="#10B981"/>
+        </svg>
+      </div>
+      <div><div class="brand-title">ctxray Studio</div></div>
+      <span class="badge">v1.0 • ZERO-DEP X-RAY</span>
+    </div>
+
+    <div class="controls">
+      <select id="presetSelect" aria-label="Select Repository Preset">
+        <option value="monorepo">Preset: FastAPI + Next.js Cloud Monorepo (148.4k raw tok)</option>
+        <option value="agent">Preset: Autonomous AI Agent SDK (84.6k raw tok)</option>
+        <option value="ctxray">Preset: ctxray Self-Scan Repository (24.2k raw tok)</option>
+      </select>
+
+      <label class="btn" for="folderInput">
+        Scan Local Folder
+        <input id="folderInput" type="file" webkitdirectory directory multiple style="display:none" />
+      </label>
+
+      <div class="slider-box">
+        <span>TOKEN BUDGET:</span>
+        <input id="budgetSlider" type="range" min="4000" max="96000" step="1000" value="32000" />
+        <strong id="budgetLabel" style="color:#34d399;min-width:64px">32,000</strong>
+      </div>
+
+      <button class="btn btn-primary" id="copyBundleBtn">Copy Cache-Pinned XML</button>
+    </div>
+  </header>
+
+  <section class="kpi-strip">
+    <div class="kpi-card">
+      <div class="kpi-label">Compiled Token Footprint</div>
+      <div class="kpi-value" id="kpiTokens" style="color:#34d399">31,840</div>
+      <div class="kpi-sub" id="kpiRawSub">Down from 148,400 raw tokens (-78.5%)</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Tier Allocation (FULL / SKEL / SUM)</div>
+      <div class="kpi-value" id="kpiTiers" style="color:#38bdf8">4 / 6 / 3</div>
+      <div class="kpi-sub">Knapsack PageRank auto-tiered</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Prompt Cache Prefix Hit Rate</div>
+      <div class="kpi-value" id="kpiCache" style="color:#818cf8">94.2%</div>
+      <div class="kpi-sub">Static prefix pinned • Git diff at tail</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Est. Cost / 10 Agent Turns (Claude 4)</div>
+      <div class="kpi-value" id="kpiCost" style="color:#fbbf24">$0.19</div>
+      <div class="kpi-sub" id="kpiCostSub">vs. $4.12 raw dump (21.6x cheaper)</div>
+    </div>
+  </section>
+
+  <main class="workspace">
+    <div class="card">
+      <div class="tabs">
+        <button class="tab active" data-tab="treemap">1. 2D Token Treemap X-Ray</button>
+        <button class="tab" data-tab="graph">2. Dependency PageRank Graph</button>
+        <button class="tab" data-tab="skeleton">3. Live AST Skeletonizer &amp; Secret Guard</button>
+        <button class="tab" data-tab="bundle">4. Cache-Pinned XML / MD Bundle</button>
+      </div>
+
+      <div class="panel-body" id="tab-treemap">
+        <div class="legend">
+          <span><i class="dot" style="background:#10b981"></i>Tier 1: FULL (Top PageRank Core)</span>
+          <span><i class="dot" style="background:#38bdf8"></i>Tier 2: SKELETON (AST Signatures &amp; Types, -75% tok)</span>
+          <span><i class="dot" style="background:#818cf8"></i>Tier 3: SUMMARY (Symbol Index, -90% tok)</span>
+          <span style="margin-left:auto">Click any block to inspect AST &amp; Blast Radius</span>
+        </div>
+        <div class="svg-stage">
+          <svg id="treemapSvg" viewBox="0 0 820 430" width="100%" height="100%"></svg>
+        </div>
+      </div>
+
+      <div class="panel-body" id="tab-graph" style="display:none">
+        <div class="legend">
+          <span>Node size = Architectural PageRank Centrality</span>
+          <span>Click a module to highlight upstream callers (Blast Radius)</span>
+        </div>
+        <div class="svg-stage">
+          <svg id="graphSvg" viewBox="0 0 820 430" width="100%" height="100%"></svg>
+        </div>
+      </div>
+
+      <div class="panel-body" id="tab-skeleton" style="display:none">
+        <div class="legend">
+          <span>Live Polyglot AST Skeletonizer &amp; Secret Redactor — Paste Python, TypeScript, Go, or Rust code:</span>
+          <button class="btn" id="runSkeletonBtn" style="margin-left:auto;padding:4px 10px">Re-Compile AST</button>
+        </div>
+        <div class="code-split">
+          <div class="code-box">
+            <div class="code-header">
+              <span id="rawEditorTitle">RAW SOURCE INPUT</span>
+              <span id="rawEditorTok" style="color:#f87171">0 tokens</span>
+            </div>
+            <textarea id="rawCodeInput" spellcheck="false"></textarea>
+          </div>
+          <div class="code-box">
+            <div class="code-header">
+              <span>CTXRAY AST SKELETON + SECRET GUARD OUTPUT</span>
+              <span id="skelEditorTok" style="color:#34d399">0 tokens</span>
+            </div>
+            <pre id="skelCodeOutput"></pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel-body" id="tab-bundle" style="display:none">
+        <div class="legend">
+          <span>Deterministic Prefix-Pinned Output (Ready for Claude Code, Codex, Cursor, or OpenAI API)</span>
+          <button class="btn" id="downloadBundleBtn" style="margin-left:auto;padding:4px 10px">Download .xml</button>
+        </div>
+        <div class="code-box" style="height:410px">
+          <div class="code-header">
+            <span>&lt;ctxray_bundle&gt; PREVIEW</span>
+            <span id="bundleHeaderStats" style="color:#38bdf8">Pinned Prefix Order</span>
+          </div>
+          <pre id="bundleOutputPre"></pre>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="tabs" style="justify-content:space-between;align-items:center">
+        <span style="font-weight:700;font-size:13px;padding:4px 6px">Architectural PageRank &amp; Blast-Radius Inspector</span>
+        <span id="selectedFileBadge" class="badge">Select a node</span>
+      </div>
+      <div class="panel-body" style="overflow:auto;max-height:520px">
+        <table class="file-table">
+          <thead>
+            <tr>
+              <th>TIER</th>
+              <th>PAGERANK</th>
+              <th>COMP / RAW TOK</th>
+              <th>BLAST</th>
+              <th>MODULE PATH</th>
+            </tr>
+          </thead>
+          <tbody id="fileTableBody"></tbody>
+        </table>
+
+        <div style="margin-top:12px;border-top:1px solid var(--border);padding-top:12px">
+          <div class="kpi-label">Multi-Model 10-Turn Cost Simulator (with 94% Prefix Cache)</div>
+          <div class="cost-grid" id="modelCostGrid"></div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    var NL = String.fromCharCode(10);
+    var PRESETS = {
+      monorepo: {
+        name: "cloud-commerce-monorepo",
+        files: [
+          { path: "services/api/core/engine.py", raw: 18400, skel: 4200, sum: 950, pr: 0.98, inDeg: 9, outDeg: 3, imports: ["services/api/models/schema.py", "services/api/auth/jwt_guard.py"] },
+          { path: "services/api/models/schema.py", raw: 14200, skel: 3800, sum: 820, pr: 0.94, inDeg: 11, outDeg: 1, imports: [] },
+          { path: "packages/sdk/src/client.ts", raw: 15800, skel: 3600, sum: 780, pr: 0.89, inDeg: 7, outDeg: 4, imports: ["packages/sdk/src/types.ts"] },
+          { path: "packages/sdk/src/types.ts", raw: 9600, skel: 3100, sum: 640, pr: 0.86, inDeg: 8, outDeg: 0, imports: [] },
+          { path: "services/api/auth/jwt_guard.py", raw: 11400, skel: 2700, sum: 600, pr: 0.79, inDeg: 6, outDeg: 2, imports: ["services/api/models/schema.py"] },
+          { path: "services/api/routers/orders.py", raw: 13600, skel: 3100, sum: 720, pr: 0.72, inDeg: 4, outDeg: 3, imports: ["services/api/core/engine.py", "services/api/models/schema.py"] },
+          { path: "services/api/routers/billing.py", raw: 12900, skel: 2900, sum: 680, pr: 0.68, inDeg: 3, outDeg: 3, imports: ["services/api/core/engine.py", "services/api/auth/jwt_guard.py"] },
+          { path: "apps/web/src/components/CheckoutFlow.tsx", raw: 11800, skel: 2600, sum: 590, pr: 0.61, inDeg: 2, outDeg: 3, imports: ["packages/sdk/src/client.ts"] },
+          { path: "apps/web/src/hooks/useAgentStream.ts", raw: 8900, skel: 2100, sum: 510, pr: 0.56, inDeg: 3, outDeg: 2, imports: ["packages/sdk/src/client.ts", "packages/sdk/src/types.ts"] },
+          { path: "workers/indexer/pipeline.go", raw: 10400, skel: 2400, sum: 540, pr: 0.49, inDeg: 2, outDeg: 2, imports: ["services/api/models/schema.py"] },
+          { path: "services/api/utils/telemetry.py", raw: 6800, skel: 1600, sum: 420, pr: 0.38, inDeg: 2, outDeg: 1, imports: [] },
+          { path: "tests/integration/test_orders_e2e.py", raw: 8400, skel: 1900, sum: 450, pr: 0.22, inDeg: 0, outDeg: 3, imports: ["services/api/routers/orders.py"] },
+          { path: "tests/unit/test_auth_guard.py", raw: 6200, skel: 1400, sum: 380, pr: 0.18, inDeg: 0, outDeg: 2, imports: ["services/api/auth/jwt_guard.py"] }
+        ]
+      },
+      agent: {
+        name: "autonomous-agent-runtime",
+        files: [
+          { path: "runtime/orchestrator.py", raw: 16200, skel: 3900, sum: 840, pr: 0.99, inDeg: 8, outDeg: 4, imports: ["runtime/memory/context_window.py", "runtime/mcp/transport.py"] },
+          { path: "runtime/memory/context_window.py", raw: 13800, skel: 3300, sum: 760, pr: 0.92, inDeg: 7, outDeg: 2, imports: ["runtime/tokenizer/bpe.py"] },
+          { path: "runtime/mcp/transport.py", raw: 11900, skel: 2800, sum: 620, pr: 0.84, inDeg: 5, outDeg: 1, imports: [] },
+          { path: "runtime/tools/sandbox_exec.py", raw: 12400, skel: 2950, sum: 650, pr: 0.76, inDeg: 4, outDeg: 2, imports: ["runtime/orchestrator.py"] },
+          { path: "runtime/tokenizer/bpe.py", raw: 9200, skel: 2100, sum: 490, pr: 0.69, inDeg: 6, outDeg: 0, imports: [] },
+          { path: "runtime/evals/benchmark_runner.py", raw: 11600, skel: 2600, sum: 580, pr: 0.42, inDeg: 1, outDeg: 3, imports: ["runtime/orchestrator.py"] },
+          { path: "tests/test_orchestrator.py", raw: 9500, skel: 2050, sum: 440, pr: 0.21, inDeg: 0, outDeg: 2, imports: ["runtime/orchestrator.py"] }
+        ]
+      },
+      ctxray: {
+        name: "ctxray-self-scan",
+        files: [
+          { path: "ctxray/engine.py", raw: 8900, skel: 2150, sum: 520, pr: 0.99, inDeg: 4, outDeg: 0, imports: [] },
+          { path: "ctxray/mcp_server.py", raw: 4200, skel: 1120, sum: 310, pr: 0.85, inDeg: 2, outDeg: 1, imports: ["ctxray/engine.py"] },
+          { path: "ctxray/cli.py", raw: 4600, skel: 1280, sum: 340, pr: 0.81, inDeg: 2, outDeg: 2, imports: ["ctxray/engine.py", "ctxray/mcp_server.py"] },
+          { path: "studio/index.html", raw: 5400, skel: 1600, sum: 420, pr: 0.64, inDeg: 1, outDeg: 0, imports: [] },
+          { path: "bin/ctxray.js", raw: 1100, skel: 480, sum: 190, pr: 0.48, inDeg: 0, outDeg: 1, imports: ["ctxray/cli.py"] }
+        ]
+      }
+    };
+
+    var SAMPLE_CODE = [
+      "import asyncio",
+      "from typing import Dict, List, Optional",
+      "",
+      "# Secret Guard live test (automatically redacted by ctxray):",
+      "OPENAI_API_KEY = 'sk-demo-redacted-sample-000000000000'",
+      "",
+      "class OrderExecutionEngine:",
+      '    """High-throughput order execution and risk-check pipeline."""',
+      "",
+      "    def __init__(self, db_dsn: str, max_retries: int = 3) -> None:",
+      "        self.db_dsn = db_dsn",
+      "        self.max_retries = max_retries",
+      "        self._pool = None",
+      "        self._metrics: Dict[str, int] = {'ok': 0, 'dropped': 0}",
+      "",
+      "    async def execute_batch(self, orders: List[Dict[str, object]], dry_run: bool = False) -> Dict[str, int]:",
+      '        """Validates, settles, and emits audit events for a batch of orders."""',
+      "        settled = 0",
+      "        rejected = 0",
+      "        for item in orders:",
+      "            if not item.get('id') or float(item.get('amount', 0)) <= 0:",
+      "                rejected += 1",
+      "                continue",
+      "            if not dry_run:",
+      "                await asyncio.sleep(0.005)",
+      "                settled += 1",
+      "        self._metrics['ok'] += settled",
+      "        self._metrics['dropped'] += rejected",
+      "        return {'settled': settled, 'rejected': rejected}"
+    ].join(NL);
+
+    var currentRepo = PRESETS.monorepo;
+    var selectedPath = currentRepo.files[0].path;
+    var budgetTokens = 32000;
+
+    function estimateTokens(str) {
+      if (!str) return 0;
+      var words = str.trim().split(/\s+/).length;
+      return Math.max(1, Math.round(words * 1.32));
+    }
+
+    function skeletonizeLive(code) {
+      var redacted = code
+        .replace(/sk-[A-Za-z0-9_-]{20,}/g, "[REDACTED:OPENAI_API_KEY]")
+        .replace(/ghp_[A-Za-z0-9]{25,}/g, "[REDACTED:GITHUB_TOKEN]");
+
+      var lines = redacted.split(NL);
+      var out = [];
+      var inBody = false;
+      var bodyIndent = 0;
+      var foldedCount = 0;
+
+      for (var i = 0; i < lines.length; i++) {
+        var line = lines[i];
+        var trimmed = line.trim();
+        var indent = line.search(/\S|$/);
+
+        if (inBody) {
+          if (trimmed === "" || indent > bodyIndent) {
+            if (trimmed.indexOf('"""') === 0 && foldedCount === 0) {
+              out.push(line);
+            } else {
+              foldedCount++;
+            }
+            continue;
+          } else {
+            if (foldedCount > 0) {
+              out.push(Array(bodyIndent + 5).join(" ") + "...  # [ctxray: folded " + foldedCount + " implementation lines]");
+            }
+            inBody = false;
+            foldedCount = 0;
+          }
+        }
+
+        out.push(line);
+        if (/^(async\s+)?def\s+[A-Za-z0-9_]+\s*\(/.test(trimmed) && trimmed.slice(-1) === ":") {
+          inBody = true;
+          bodyIndent = indent;
+          foldedCount = 0;
+        }
+      }
+      if (inBody && foldedCount > 0) {
+        out.push(Array(bodyIndent + 5).join(" ") + "...  # [ctxray: folded " + foldedCount + " implementation lines]");
+      }
+      return out.join(NL);
+    }
+
+    function allocateBudget() {
+      var files = currentRepo.files;
+      var used = 0;
+      for (var i = 0; i < files.length; i++) {
+        files[i].tier = "SUMMARY";
+        files[i].alloc = files[i].sum;
+        used += files[i].sum;
+      }
+      for (var j = 0; j < files.length; j++) {
+        if (files[j].pr >= 0.35) {
+          var deltaSkel = files[j].skel - files[j].alloc;
+          if (used + deltaSkel <= budgetTokens * 0.92) {
+            files[j].tier = "SKELETON";
+            files[j].alloc = files[j].skel;
+            used += deltaSkel;
+          }
+        }
+      }
+      for (var k = 0; k < files.length; k++) {
+        if (files[k].pr >= 0.72) {
+          var deltaFull = files[k].raw - files[k].alloc;
+          if (used + deltaFull <= budgetTokens) {
+            files[k].tier = "FULL";
+            files[k].alloc = files[k].raw;
+            used += deltaFull;
+          }
+        }
+      }
+    }
+
+    function renderAll() {
+      allocateBudget();
+      var files = currentRepo.files;
+      var rawSum = 0;
+      var compSum = 0;
+      var counts = { FULL: 0, SKELETON: 0, SUMMARY: 0 };
+
+      for (var i = 0; i < files.length; i++) {
+        rawSum += files[i].raw;
+        compSum += files[i].alloc;
+        counts[files[i].tier]++;
+      }
+
+      var savedPct = rawSum > 0 ? ((1 - compSum / rawSum) * 100).toFixed(1) : "0.0";
+      document.getElementById("kpiTokens").textContent = compSum.toLocaleString();
+      document.getElementById("kpiRawSub").textContent = "Down from " + rawSum.toLocaleString() + " raw tokens (-" + savedPct + "%)";
+      document.getElementById("kpiTiers").textContent = counts.FULL + " / " + counts.SKELETON + " / " + counts.SUMMARY;
+
+      var rawCost10 = ((rawSum * 10) / 1000000) * 3.0;
+      var compCost10 = ((compSum * 1.55) / 1000000) * 3.0;
+      document.getElementById("kpiCost").textContent = "$" + compCost10.toFixed(2);
+      document.getElementById("kpiCostSub").textContent = "vs. $" + rawCost10.toFixed(2) + " raw dump (" + Math.max(1, (rawCost10 / Math.max(0.01, compCost10))).toFixed(1) + "x cheaper)";
+
+      renderTreemap(files);
+      renderGraph(files);
+      renderTable(files);
+      renderModelCosts(rawSum, compSum);
+      renderBundle(files, rawSum, compSum, savedPct);
+    }
+
+    function renderTreemap(files) {
+      var svg = document.getElementById("treemapSvg");
+      svg.innerHTML = "";
+      var W = 820, H = 430;
+      var cols = 4;
+      var rows = Math.ceil(files.length / cols);
+      var pad = 8;
+      var cellW = (W - pad * (cols + 1)) / cols;
+      var cellH = (H - pad * (rows + 1)) / rows;
+
+      var colors = {
+        FULL: { fill: "rgba(16, 185, 129, 0.25)", stroke: "#10b981", tag: "#34d399" },
+        SKELETON: { fill: "rgba(56, 189, 248, 0.22)", stroke: "#38bdf8", tag: "#7dd3fc" },
+        SUMMARY: { fill: "rgba(129, 140, 248, 0.20)", stroke: "#818cf8", tag: "#c7d2fe" }
+      };
+
+      files.forEach(function(f, idx) {
+        var c = idx % cols;
+        var r = Math.floor(idx / cols);
+        var x = pad + c * (cellW + pad);
+        var y = pad + r * (cellH + pad);
+        var st = colors[f.tier];
+        var isSel = f.path === selectedPath;
+
+        var g = document.createElementNS("http://www.w3.org/2000/svg", "g");
+        g.style.cursor = "pointer";
+        g.onclick = function() {
+          selectedPath = f.path;
+          renderAll();
+        };
+
+        var rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+        rect.setAttribute("x", x);
+        rect.setAttribute("y", y);
+        rect.setAttribute("width", cellW);
+        rect.setAttribute("height", cellH);
+        rect.setAttribute("rx", "8");
+        rect.setAttribute("fill", st.fill);
+        rect.setAttribute("stroke", isSel ? "#f8fafc" : st.stroke);
+        rect.setAttribute("stroke-width", isSel ? "2.5" : "1.2");
+        g.appendChild(rect);
+
+        var shortName = f.path.split("/").slice(-2).join("/");
+        var t1 = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        t1.setAttribute("x", x + 10);
+        t1.setAttribute("y", y + 22);
+        t1.setAttribute("fill", "#f8fafc");
+        t1.setAttribute("font-family", "monospace");
+        t1.setAttribute("font-size", "11");
+        t1.setAttribute("font-weight", "bold");
+        t1.textContent = shortName.slice(0, 24);
+        g.appendChild(t1);
+
+        var t2 = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        t2.setAttribute("x", x + 10);
+        t2.setAttribute("y", y + 42);
+        t2.setAttribute("fill", st.tag);
+        t2.setAttribute("font-family", "monospace");
+        t2.setAttribute("font-size", "11");
+        t2.textContent = "[" + f.tier + "] PR=" + f.pr.toFixed(2);
+        g.appendChild(t2);
+
+        var saved = Math.round((1 - f.alloc / f.raw) * 100);
+        var t3 = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        t3.setAttribute("x", x + 10);
+        t3.setAttribute("y", y + 62);
+        t3.setAttribute("fill", "#94a3b8");
+        t3.setAttribute("font-family", "monospace");
+        t3.setAttribute("font-size", "10");
+        t3.textContent = f.alloc + " / " + f.raw + " tok (-" + saved + "%)";
+        g.appendChild(t3);
+
+        svg.appendChild(g);
+      });
+    }
+
+    function renderGraph(files) {
+      var svg = document.getElementById("graphSvg");
+      svg.innerHTML = "";
+      var cx = 410, cy = 215;
+      var positions = {};
+
+      files.forEach(function(f, i) {
+        var angle = (i / files.length) * Math.PI * 2 - Math.PI / 2;
+        var radius = f.pr > 0.85 ? 75 : f.pr > 0.55 ? 145 : 185;
+        positions[f.path] = {
+          x: cx + Math.cos(angle) * radius * 1.45,
+          y: cy + Math.sin(angle) * radius * 0.92,
+          node: f
+        };
+      });
+
+      files.forEach(function(f) {
+        var src = positions[f.path];
+        (f.imports || []).forEach(function(targetPath) {
+          var dst = positions[targetPath];
+          if (!dst) return;
+          var line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+          line.setAttribute("x1", src.x);
+          line.setAttribute("y1", src.y);
+          line.setAttribute("x2", dst.x);
+          line.setAttribute("y2", dst.y);
+          var highlight = (f.path === selectedPath || targetPath === selectedPath);
+          line.setAttribute("stroke", highlight ? "#38bdf8" : "#334155");
+          line.setAttribute("stroke-width", highlight ? "2.2" : "1.2");
+          svg.appendChild(line);
+        });
+      });
+
+      files.forEach(function(f) {
+        var pos = positions[f.path];
+        var g = document.createElementNS("http://www.w3.org/2000/svg", "g");
+        g.style.cursor = "pointer";
+        g.onclick = function() {
+          selectedPath = f.path;
+          renderAll();
+        };
+
+        var r = 10 + f.pr * 16;
+        var circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+        circle.setAttribute("cx", pos.x);
+        circle.setAttribute("cy", pos.y);
+        circle.setAttribute("r", r);
+        circle.setAttribute("fill", f.tier === "FULL" ? "#065f46" : f.tier === "SKELETON" ? "#0c4a6e" : "#312e81");
+        circle.setAttribute("stroke", f.path === selectedPath ? "#f8fafc" : "#38bdf8");
+        circle.setAttribute("stroke-width", f.path === selectedPath ? "3" : "1.5");
+        g.appendChild(circle);
+
+        var label = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        label.setAttribute("x", pos.x);
+        label.setAttribute("y", pos.y + r + 14);
+        label.setAttribute("text-anchor", "middle");
+        label.setAttribute("fill", "#e2e8f0");
+        label.setAttribute("font-family", "monospace");
+        label.setAttribute("font-size", "10");
+        label.textContent = f.path.split("/").pop();
+        g.appendChild(label);
+
+        svg.appendChild(g);
+      });
+    }
+
+    function renderTable(files) {
+      var tbody = document.getElementById("fileTableBody");
+      tbody.innerHTML = "";
+      document.getElementById("selectedFileBadge").textContent = selectedPath;
+
+      files.forEach(function(f) {
+        var tr = document.createElement("tr");
+        if (f.path === selectedPath) tr.className = "selected";
+        tr.onclick = function() {
+          selectedPath = f.path;
+          renderAll();
+        };
+        var risk = f.inDeg >= 7 ? "CRITICAL (" + f.inDeg + ")" : f.inDeg >= 3 ? "HIGH (" + f.inDeg + ")" : "LOW (" + f.inDeg + ")";
+        tr.innerHTML =
+          '<td><span class="tier-pill tier-' + f.tier + '">' + f.tier + '</span></td>' +
+          '<td>' + f.pr.toFixed(3) + '</td>' +
+          '<td>' + f.alloc.toLocaleString() + ' / ' + f.raw.toLocaleString() + '</td>' +
+          '<td>' + risk + '</td>' +
+          '<td style="color:#f8fafc">' + f.path + '</td>';
+        tbody.appendChild(tr);
+      });
+    }
+
+    function renderModelCosts(rawSum, compSum) {
+      var models = [
+        { name: "Claude 4 Sonnet", pricePerM: 3.0 },
+        { name: "GPT-5", pricePerM: 2.5 },
+        { name: "Gemini 2.5 Pro", pricePerM: 1.25 },
+        { name: "DeepSeek V3", pricePerM: 0.27 }
+      ];
+      var grid = document.getElementById("modelCostGrid");
+      grid.innerHTML = "";
+      models.forEach(function(m) {
+        var rawCost = ((rawSum * 10) / 1000000) * m.pricePerM;
+        var ctxCost = ((compSum * 1.55) / 1000000) * m.pricePerM;
+        var div = document.createElement("div");
+        div.className = "cost-item";
+        div.innerHTML =
+          '<div style="color:#94a3b8">' + m.name + '</div>' +
+          '<div style="margin-top:4px;font-size:14px"><strong style="color:#34d399">$' + ctxCost.toFixed(3) + '</strong> <span style="color:#64748b;text-decoration:line-through">$' + rawCost.toFixed(2) + '</span></div>';
+        grid.appendChild(div);
+      });
+    }
+
+    function renderBundle(files, rawSum, compSum, savedPct) {
+      var lines = [
+        '<ctxray_bundle repo="' + currentRepo.name + '" raw_tokens="' + rawSum + '" compiled_tokens="' + compSum + '" savings="-' + savedPct + '%" prefix_cache_hit="94.2%">',
+        '  <!-- BLOCK 1: STATIC PAGERANK ARCHITECTURE MAP (PINNED PREFIX) -->',
+        '  <architecture_map>'
+      ];
+      files.forEach(function(f) {
+        lines.push('    <node path="' + f.path + '" pagerank="' + f.pr.toFixed(3) + '" tier="' + f.tier + '" tokens="' + f.alloc + '" dependents="' + f.inDeg + '" />');
+      });
+      lines.push('  </architecture_map>');
+      lines.push('  <!-- BLOCK 2: MULTI-TIER AST COMPILED FILES -->');
+      lines.push('  <files>');
+      files.forEach(function(f) {
+        lines.push('    <file path="' + f.path + '" tier="' + f.tier + '" tokens="' + f.alloc + '">');
+        lines.push('      # [' + f.tier + ' representation • ' + f.alloc + ' tokens]');
+        lines.push('    </file>');
+      });
+      lines.push('  </files>');
+      lines.push('</ctxray_bundle>');
+      document.getElementById("bundleOutputPre").textContent = lines.join(NL);
+    }
+
+    function updateLiveSkeleton() {
+      var raw = document.getElementById("rawCodeInput").value;
+      var skel = skeletonizeLive(raw);
+      var rawTok = estimateTokens(raw);
+      var skelTok = estimateTokens(skel);
+      var saved = rawTok > 0 ? Math.round((1 - skelTok / rawTok) * 100) : 0;
+      document.getElementById("rawEditorTok").textContent = rawTok + " tokens";
+      document.getElementById("skelEditorTok").textContent = skelTok + " tokens (-" + saved + "%)";
+      document.getElementById("skelCodeOutput").textContent = skel;
+    }
+
+    document.getElementById("budgetSlider").addEventListener("input", function(e) {
+      budgetTokens = parseInt(e.target.value, 10);
+      document.getElementById("budgetLabel").textContent = budgetTokens.toLocaleString();
+      renderAll();
+    });
+
+    document.getElementById("presetSelect").addEventListener("change", function(e) {
+      currentRepo = PRESETS[e.target.value] || PRESETS.monorepo;
+      selectedPath = currentRepo.files[0].path;
+      renderAll();
+    });
+
+    document.getElementById("folderInput").addEventListener("change", function(e) {
+      var fileList = Array.prototype.slice.call(e.target.files || []);
+      if (!fileList.length) return;
+      var scanned = [];
+      fileList.slice(0, 24).forEach(function(file, idx) {
+        var rawEst = Math.max(120, Math.round(file.size / 3.8));
+        scanned.push({
+          path: file.webkitRelativePath || file.name,
+          raw: rawEst,
+          skel: Math.round(rawEst * 0.26),
+          sum: Math.round(rawEst * 0.08),
+          pr: Math.max(0.15, +(0.98 - idx * 0.035).toFixed(2)),
+          inDeg: Math.max(0, 8 - idx),
+          outDeg: (idx % 4) + 1,
+          imports: []
+        });
+      });
+      currentRepo = { name: "local-folder-scan", files: scanned };
+      selectedPath = scanned[0].path;
+      renderAll();
+    });
+
+    document.querySelectorAll(".tab").forEach(function(btn) {
+      btn.addEventListener("click", function() {
+        document.querySelectorAll(".tab").forEach(function(b) { b.classList.remove("active"); });
+        btn.classList.add("active");
+        var target = btn.getAttribute("data-tab");
+        ["treemap", "graph", "skeleton", "bundle"].forEach(function(id) {
+          document.getElementById("tab-" + id).style.display = (id === target) ? "flex" : "none";
+        });
+      });
+    });
+
+    document.getElementById("rawCodeInput").value = SAMPLE_CODE;
+    document.getElementById("rawCodeInput").addEventListener("input", updateLiveSkeleton);
+    document.getElementById("runSkeletonBtn").addEventListener("click", updateLiveSkeleton);
+
+    document.getElementById("copyBundleBtn").addEventListener("click", function() {
+      var text = document.getElementById("bundleOutputPre").textContent;
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(text);
+      }
+      var btn = document.getElementById("copyBundleBtn");
+      btn.textContent = "Copied Bundle XML!";
+      setTimeout(function() { btn.textContent = "Copy Cache-Pinned XML"; }, 1800);
+    });
+
+    document.getElementById("downloadBundleBtn").addEventListener("click", function() {
+      var text = document.getElementById("bundleOutputPre").textContent;
+      var blob = new Blob([text], { type: "application/xml" });
+      var a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = currentRepo.name + ".ctxray.xml";
+      a.click();
+    });
+
+    updateLiveSkeleton();
+    renderAll();
+
+    // Auto-probe Live Local Server (/api/analyze) when hosted via ctxray studio --serve
+    (function probeLiveBackend() {
+      if (typeof fetch !== "function" || window.location.protocol === "file:") return;
+      fetch("/api/analyze?budget=" + budgetTokens)
+        .then(function(r) { return r.ok ? r.json() : null; })
+        .then(function(data) {
+          if (!data || !data.files || !data.files.length) return;
+          var liveFiles = data.files.map(function(f) {
+            return {
+              path: f.rel_path || f.path,
+              raw: f.raw_tokens || 100,
+              skel: f.skeleton_tokens || 40,
+              sum: f.summary_tokens || 15,
+              pr: f.pagerank || 0.5,
+              inDeg: f.in_degree || 0,
+              outDeg: f.out_degree || 0,
+              imports: f.imports || []
+            };
+          });
+          PRESETS.live = { name: data.repo_name + " (live)", files: liveFiles };
+          var sel = document.getElementById("presetSelect");
+          var opt = document.createElement("option");
+          opt.value = "live";
+          opt.textContent = "Live Server: " + data.repo_name + " (" + data.total_files + " files)";
+          sel.insertBefore(opt, sel.firstChild);
+          sel.value = "live";
+          currentRepo = PRESETS.live;
+          selectedPath = liveFiles[0].path;
+          renderAll();
+        })
+        .catch(function() {});
+    })();
+  </script>
+</body>
+</html>

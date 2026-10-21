@@ -1,0 +1,58 @@
+<ctxray_bundle repo="acme-payments-api" raw_tokens="38450" compiled_tokens="4820" savings_pct="87.5%" prefix_cache_hit_est="94.2%">
+  <!-- BLOCK 1: STATIC ARCHITECTURAL MAP (PINNED PREFIX) -->
+  <architecture_map>
+    <node path="src/auth/middleware.py" pagerank="0.384" tier="FULL" tokens="145" in_degree="4" imports="src/billing/ledger.py" />
+    <node path="src/billing/ledger.py" pagerank="0.291" tier="SKELETON" tokens="68" in_degree="3" imports="src/db/pool.py" />
+    <node path="src/ui/CheckoutButton.tsx" pagerank="0.074" tier="SUMMARY" tokens="24" in_degree="1" imports="src/auth/middleware.py" />
+  </architecture_map>
+  <!-- BLOCK 2: TIERED SOURCE CONTEXT (FULL -> SKELETON -> SUMMARY) -->
+  <files>
+    <file path="src/auth/middleware.py" tier="FULL" pagerank="0.384" tokens="145">
+import time
+from src.billing.ledger import LedgerClient
+
+WEBHOOK_SIGNING_SECRET = "[REDACTED_BY_CTXRAY_SECRET_GUARD]"
+
+class RateLimiterMiddleware:
+    """Token-bucket rate limiter protecting payment endpoints."""
+
+    def __init__(self, ledger: LedgerClient, capacity: int = 60) -> None:
+        self.ledger = ledger
+        self.capacity = capacity
+        self._buckets: dict[str, tuple[float, float]] = {}
+
+    def allow_request(self, tenant_id: str, cost: float = 1.0) -> bool:
+        tokens, last_ts = self._buckets.get(tenant_id, (float(self.capacity), time.monotonic()))
+        now = time.monotonic()
+        tokens = min(float(self.capacity), tokens + (now - last_ts) * (self.capacity / 60.0))
+        if tokens < cost:
+            return False
+        self._buckets[tenant_id] = (tokens - cost, now)
+        return True
+    </file>
+    <file path="src/billing/ledger.py" tier="SKELETON" pagerank="0.291" tokens="68">
+class LedgerClient:
+    """Double-entry immutable transaction ledger client."""
+    def __init__(self, dsn: str, timeout_ms: int = 500) -> None:
+        ...  # [ctxray: folded 6 lines]
+    def record_debit(self, tenant_id: str, amount_cents: int, idempotency_key: str) -> str:
+        """Append debit entry and return ledger transaction ID."""
+        ...  # [ctxray: folded 18 lines]
+    def get_balance(self, tenant_id: str) -> int:
+        ...  # [ctxray: folded 9 lines]
+    </file>
+    <file path="src/ui/CheckoutButton.tsx" tier="SUMMARY" pagerank="0.074" tokens="24">
+// [ctxray summary] src/ui/CheckoutButton.tsx (84 lines) | Symbols: CheckoutProps, CheckoutButton
+    </file>
+  </files>
+  <!-- BLOCK 3: VOLATILE GIT WORKTREE DIFF (APPENDED AT TAIL TO PRESERVE CACHE) -->
+  <git_diff tokens="82">
+M src/auth/middleware.py
+--- a/src/auth/middleware.py
++++ b/src/auth/middleware.py
+@@ -14,3 +14,4 @@ class RateLimiterMiddleware:
+     def allow_request(self, tenant_id: str, cost: float = 1.0) -> bool:
++        # TODO: guard bucket mutation with per-tenant threading.Lock
+         tokens, last_ts = self._buckets.get(tenant_id, (float(self.capacity), time.monotonic()))
+  </git_diff>
+</ctxray_bundle>

@@ -1,0 +1,109 @@
+name: PR Token & Blast Radius X-Ray
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  ctxray-blast-radius:
+    name: ctxray Blast Radius & Token X-Ray
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout PR branch with full base history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Run ctxray Rank & Blast Radius Analysis on Changed Files
+        id: xray
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          CHANGED_FILES=$(git diff --name-only --diff-filter=ACMR "$BASE_SHA" "$HEAD_SHA" | grep -E '\.(py|ts|tsx|js|jsx|go|rs)$' || true)
+
+          {
+            echo "### 🩻 ctxray — PR Token & Blast Radius X-Ray"
+            echo ""
+            echo "| Changed File | Direct Dependents | Transitive Impact | Blast Report |"
+            echo "| :--- | :---: | :---: | :--- |"
+            if [ -z "$CHANGED_FILES" ]; then
+              echo "| _None_ | 0 | 0 | No supported source files modified |"
+            else
+              for FILE in $CHANGED_FILES; do
+                if [ -f "$FILE" ]; then
+                  BLAST_OUT=$(python ctxray.py blast "$FILE" 2>&1 || true)
+                  SUMMARY_LINE=$(echo "$BLAST_OUT" | head -n 3 | tr "\n" " " | sed "s/|/\\|/g")
+                  echo "| \`$FILE\` | see details | see details | $SUMMARY_LINE |"
+                fi
+              done
+            fi
+            echo ""
+            if [ -n "$CHANGED_FILES" ]; then
+              echo "#### 🎯 Detailed Blast Radius by Changed File"
+              echo ""
+              for FILE in $CHANGED_FILES; do
+                if [ -f "$FILE" ]; then
+                  echo "<details open><summary><code>$FILE</code></summary>"
+                  echo ""
+                  echo '```text'
+                  python ctxray.py blast "$FILE" || true
+                  echo '```'
+                  echo "</details>"
+                  echo ""
+                fi
+              done
+            fi
+
+            echo "#### 📊 Repository Hub PageRank & Token Hotspots (`python ctxray.py rank .`)"
+            echo ""
+            echo '```text'
+            python ctxray.py rank . --top 10 || true
+            echo '```'
+          } > ctxray-report.md
+
+      - name: Post or Update PR X-Ray Comment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const marker = '<!-- ctxray-blast-radius-bot -->';
+            const report = fs.readFileSync('ctxray-report.md', 'utf8');
+            const body = `${marker}\n${report}`;
+
+            const { owner, repo } = context.repo;
+            const issue_number = context.issue.number;
+
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              owner,
+              repo,
+              issue_number,
+              per_page: 100,
+            });
+
+            const existing = comments.find(c => c.body && c.body.includes(marker));
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner,
+                repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner,
+                repo,
+                issue_number,
+                body,
+              });
+            }
